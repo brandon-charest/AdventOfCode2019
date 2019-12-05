@@ -19,10 +19,10 @@ def closest_intersection(wire_data):
     wire1_pts = wire_points(wire1)
     wire2_pts = wire_points(wire2)
     cross = set(wire1_pts.keys()) & set(wire2_pts.keys())
-    dist = []
-    for c in cross:
-        dist.append(abs(c[0]) + abs(c[1]))
-    print(min(dist))
+
+    dist = min([abs(x) + abs(y) for x, y in cross])
+    steps = min([wire1_pts[x] + wire2_pts[x] for x in cross])
+    print(dist, steps)
 
 
 with open('input', 'r') as f:
