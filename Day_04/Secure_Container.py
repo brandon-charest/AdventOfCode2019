@@ -10,7 +10,8 @@ def passwords(number_range):
         rest = temp[1:]
         for i in rest:
             if prev == i:
-                doubles = True
+                if temp.count(i) == 2:
+                    doubles = True
             if prev > i:
                 increasing = False
                 break
