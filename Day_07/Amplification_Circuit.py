@@ -1,11 +1,12 @@
 from itertools import permutations
 
+
 def decode_opcode(instruction):
     return instruction.rjust(5, '0')
 
 
-def compute(arr, input, feedback=False):
-    ptr = 0
+def compute(arr, input, feedback=False, pointer_value=0):
+    ptr = pointer_value
     skip = [4, 4, 2, 2, 3, 3, 4, 4]
     output = -1
     while arr[ptr] != 99:
@@ -33,6 +34,8 @@ def compute(arr, input, feedback=False):
             val = arr[ptr + 1] if op1 is 0 else ptr + 1
             output = arr[val]
             ptr += skip[opcode - 1]
+            if feedback:
+                return output, ptr
         # Jump If True
         elif opcode is 5:
             val1 = arr[ptr + 1] if op1 == 0 else ptr + 1
@@ -63,7 +66,21 @@ def compute(arr, input, feedback=False):
             ptr += skip[opcode - 1]
         else:
             return print(f"Unknown Opcode:{opcode}")
-    return output
+    return output, None
+
+
+def run_phase_setting(data, setting):
+    programs, ptr_return, inputs, amp_output = [], [], [], 0
+    num = len(setting)
+    ptr_return = [0 for _ in range(num)]
+    programs = [data for _ in range(num)]
+    inputs = [[setting[i]] for i in range(num)]
+    while ptr_return[0] is not None:
+        for i in range(num):
+            inputs[i].append(amp_output)
+            amp_output, ptr = compute(programs[i], inputs[i], True, ptr_return[i])
+            ptr_return[i] = ptr
+    return inputs[0][0]
 
 
 code_arr = []
@@ -71,12 +88,18 @@ with open('input', 'r') as f:
     for line in f:
         code_arr = [int(num) for num in line.split(',')]
 
-sequences = list(permutations([0,1,2,3,4]))
+sequences = list(permutations([0, 1, 2, 3, 4]))
 max_thrust = 0
 for sequence in sequences:
     output = 0
     for num in sequence:
-        output = compute(code_arr, [num, output])
+        output, _ = compute(code_arr, [num, output])
         max_thrust = max(max_thrust, output)
-print(max_thrust)
+
+sequences2 = list(permutations([5, 6, 7, 8, 9]))
+max_thrust2 = 0
+for sequence in sequences2:
+    output = run_phase_setting(code_arr, list(sequence))
+    max_thrust2 = max(max_thrust2, output)
+print(max_thrust, max_thrust2)
 
