@@ -28,10 +28,7 @@ def find_station(map_data):
                 max_count = len(count)
                 result = station
         # just for visualization
-        #grid[station[1]][station[0]] = len(count)
-
-
-
+        # grid[station[1]][station[0]] = len(count)
     print(result, max_count)
     print('\n'.join(' '.join(str(x) for x in row) for row in grid))
     return

@@ -43,10 +43,12 @@ OPS = {
 
 class IntCodeMachine:
 
-    def __init__(self, memory):
+    def __init__(self, memory, mode='default'):
         self.ptr = 0
         self.mem = memory.copy()
         self.rel_base = 0
+        self.machine_mode = mode
+        self.op = None
 
     def __getitem__(self, index):
         return self.mem[index]
@@ -82,42 +84,49 @@ class IntCodeMachine:
             args[i] = arg
         return args
 
-    def run(self, input=0):
-        output = None
+    def get_current_op(self):
+        return self.op
+
+    def run(self, input):
+        output = []
         while True:
             instruction = self[self.ptr]
 
             if OP_TYPE(instruction % 100):
-                op = OP_TYPE(instruction % 100)
+                self.op = OP_TYPE(instruction % 100)
             else:
                 raise Exception(f'Issue occurred at instruction: {instruction}')
             modes = instruction // 100
-            args = OPS[op]
+            args = OPS[self.op]
             a, b, c, d = self.get_args(args, modes)
             self.ptr += 1 + len(args)
 
-            if op is OP_TYPE.INPUT:
+            if self.op is OP_TYPE.INPUT:
                 self[a] = input
-            elif op is OP_TYPE.OUT:
-                output = a
-            elif op is OP_TYPE.ADD:
+            elif self.op is OP_TYPE.OUT:
+                output.append(a)
+                if self.machine_mode is 'paint' and len(output) is 2:
+                    break
+            elif self.op is OP_TYPE.ADD:
                 self[c] = a + b
-            elif op is OP_TYPE.MUL:
+            elif self.op is OP_TYPE.MUL:
                 self[c] = a * b
-            elif op is OP_TYPE.LESS_THAN:
+            elif self.op is OP_TYPE.LESS_THAN:
                 self[c] = 1 if a < b else 0
-            elif op is OP_TYPE.EQUALS:
+            elif self.op is OP_TYPE.EQUALS:
                 self[c] = 1 if a is b else 0
-            elif op is OP_TYPE.JUMP_TRUE:
+            elif self.op is OP_TYPE.JUMP_TRUE:
                 if a is not 0:
                     self.ptr = b
-            elif op is OP_TYPE.JUMP_FALSE:
+            elif self.op is OP_TYPE.JUMP_FALSE:
                 if a is 0:
                     self.ptr = b
-            elif op is OP_TYPE.ADD_RELATIVE_BASE:
+            elif self.op is OP_TYPE.ADD_RELATIVE_BASE:
                 self.rel_base += a
-            elif op is OP_TYPE.HALT:
+            elif self.op is OP_TYPE.HALT:
                 break
             else:
-                raise Exception(f'Unknown Opcode {op}')
+                raise Exception(f'Unknown Opcode {self.op}')
         return output
+
+
