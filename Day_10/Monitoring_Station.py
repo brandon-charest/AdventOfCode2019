@@ -1,22 +1,10 @@
 import math
-def get_distance(p1, p2):
-    return math.sqrt(((p2[1]-p1[1])**2)+((p2[0]-p1[0])**2))
 
-def los(astroids, a1, a2):
-    d1 = get_distance(a1, a2)
-    for a3 in astroids:
-        if a3 == a1:
-            continue
-        if a3 == a2:
-            continue
-
-        d2 = get_distance(a1, a3)
-        d3 = get_distance(a2, a3)
-
-        if d1 == (d2 + d3):
-            return False
-    return True
-
+def get_angle(p1, p2):
+    result = math.atan2(p2[0] - p1[0], p1[1] - p2[1]) * 180 / math.pi
+    if result < 0:
+        return 360 + result
+    return result
 
 def find_station(map_data):
     grid = [[x for x in line] for line in map_data.splitlines()]
@@ -26,26 +14,25 @@ def find_station(map_data):
         for y in range(rows):
             if grid[y][x] is '#':
                 asteroids.add((x, y))
-                print(x,y)
-    dict = {}
+
+
+    max_count = 0
+    result = None
     for station in asteroids:
-        if station != (1, 0):
-            continue
-        count = 0
-        for asteroid1 in asteroids:
-            if station == asteroid1:
+        count = set()
+        for asteroid in asteroids:
+            if station == asteroid:
                 continue
-            if los(asteroids, station, asteroid1):
-                print(station, asteroid1)
-                count +=1
+            count.add(get_angle(station, asteroid))
+            if len(count) > max_count:
+                max_count = len(count)
+                result = station
+        # just for visualization
+        #grid[station[1]][station[0]] = len(count)
 
-        dict[station] = count
-    # print('\n'.join(' '.join(x for x in row) for row in grid))
 
-    for k, v in dict.items():
-        grid[k[1]][k[0]] = v
 
-    # print(dict)
+    print(result, max_count)
     print('\n'.join(' '.join(str(x) for x in row) for row in grid))
     return
 
